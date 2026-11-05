@@ -109,6 +109,7 @@ async function main() {
   const settings = defaultSettings();
   Object.assign(settings, {
     logo_text: 'SKYLINE DEMO', hotline: '0900000000', zalo: '0900000000', website: 'https://example.com',
+    facebook: 'https://www.facebook.com/', youtube: 'https://www.youtube.com/',
     location: {
       lat: 10.80, lng: 106.70, city: 'TP. Demo',
       address: L('Số 1 Đường Demo, TP. Demo', '1 Demo Street, Demo City'),

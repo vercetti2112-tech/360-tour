@@ -416,7 +416,7 @@ function safeJson(s, fallback) { try { return s ? JSON.parse(s) : fallback; } ca
 
 export function defaultSettings() {
   return {
-    theme_color: '#0b2a40', accent: '#e8b04b', logo_text: '', start_language: 'vi', languages: ['vi', 'en'],
+    theme_color: '#0b2a40', accent: '#e8b04b', logo_text: '', start_language: 'vi', languages: ['vi', 'en'], layout: 'topnav',
     hotline: '', zalo: '', messenger: '', website: '', facebook: '', youtube: '',
     disclaimer: { vi: 'Hình ảnh mang tính minh hoạ, có thể thay đổi theo thực tế.', en: 'Images are for illustration purposes only.' },
     location: { lat: null, lng: null, city: '', address: { vi: '', en: '' }, content: { vi: '', en: '' }, map_embed: '' },

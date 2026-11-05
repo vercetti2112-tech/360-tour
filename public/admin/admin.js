@@ -682,7 +682,8 @@ function renderSettings(main) {
     ${i18nField('name', 'Tên dự án', p.name)}${i18nField('description', 'Mô tả (SEO)', p.description || {}, { area: true })}
     <div class="grid3">${field('slug', 'Slug URL', p.slug, 'text', 'pattern="[a-z0-9-]{2,60}"')}
       ${select('start_scene_id', 'Cảnh mở đầu', p.start_scene_id, D().scenes.map((x) => [x.id, vi(x.title)]), 'data-num')}
-      ${select('settings.start_language', 'Ngôn ngữ mặc định', s.start_language, [['vi', 'Tiếng Việt'], ['en', 'English']])}</div>
+      ${select('settings.start_language', 'Ngôn ngữ mặc định', s.start_language, [['vi', 'Tiếng Việt'], ['en', 'English']])}
+      ${select('settings.layout', 'Kiểu giao diện', s.layout || 'topnav', [['topnav', 'Menu ngang (trên cùng)'], ['rail', 'Thanh dọc bên trái']])}</div>
     <h3>Thương hiệu</h3>
     <div class="grid3">${field('settings.logo_text', 'Chữ logo (khi không có ảnh)', s.logo_text)}
       ${select('settings.logo_media_id', 'Ảnh logo', s.logo_media_id, mediaOptions((m) => m.kind === 'image'), 'data-num')}

@@ -20,7 +20,7 @@ const isTouch = matchMedia('(pointer: coarse)').matches;
 // ---------------- i18n ----------------
 let lang = R.lang || S.start_language || 'vi';
 const UI = {
-  vi: { cta: 'Nhận báo giá', location: 'Vị trí', plan: 'Mặt bằng', facilities: 'Tiện ích', gallery: 'Thư viện', minutes: 'phút',
+  vi: { cta: 'Nhận báo giá', units: 'Căn hộ mẫu', location: 'Vị trí', plan: 'Mặt bằng', facilities: 'Tiện ích', gallery: 'Thư viện', minutes: 'phút',
     autorotate: 'Tự xoay', autotour: 'Tham quan tự động', sound: 'Nhạc nền', fullscreen: 'Toàn màn hình', vr: 'Kính VR', gyro: 'Cảm biến xoay',
     share: 'Chia sẻ', help: 'Hướng dẫn', zoomIn: 'Phóng to', zoomOut: 'Thu nhỏ', images: 'Hình ảnh', videos: 'Video', documents: 'Tài liệu', legal: 'Pháp lý',
     name: 'Họ và tên', phone: 'Số điện thoại', email: 'Email (không bắt buộc)', interest: 'Quan tâm', other: 'Khác', note: 'Lời nhắn',
@@ -28,7 +28,7 @@ const UI = {
     copy: 'Sao chép link', copied: 'Đã sao chép link', call: 'Gọi', open: 'Mở', download: 'Tải về', nearby: 'Kết nối khu vực', floorplan: 'Mặt bằng căn',
     helpBody: '<p><b>Kéo</b> chuột hoặc vuốt để nhìn xung quanh, <b>cuộn</b> hoặc chụm 2 ngón để phóng to.</p><p>Bấm vào <b>điểm tròn</b> để di chuyển, <b>biểu tượng</b> để xem thông tin.</p><p>Dùng menu bên trái để chuyển khu vực, xem vị trí, mặt bằng, tiện ích và thư viện.</p>',
     error: 'Có lỗi xảy ra, vui lòng thử lại.', back: 'Quay lại tour' },
-  en: { cta: 'Get a quote', location: 'Location', plan: 'Masterplan', facilities: 'Facilities', gallery: 'Gallery', minutes: 'min',
+  en: { cta: 'Get a quote', units: 'Show units', location: 'Location', plan: 'Masterplan', facilities: 'Facilities', gallery: 'Gallery', minutes: 'min',
     autorotate: 'Auto-rotate', autotour: 'Auto tour', sound: 'Music', fullscreen: 'Fullscreen', vr: 'VR headset', gyro: 'Gyroscope',
     share: 'Share', help: 'Help', zoomIn: 'Zoom in', zoomOut: 'Zoom out', images: 'Images', videos: 'Videos', documents: 'Documents', legal: 'Legal',
     name: 'Full name', phone: 'Phone number', email: 'Email (optional)', interest: 'Interested in', other: 'Other', note: 'Message',
@@ -63,7 +63,11 @@ const I = {
   chat: '<path d="M4 5h16v11H9l-5 4z"/>', info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>',
   video: '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/>',
   image: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M21 16l-5-5-8 8"/>',
-  doc: '<path d="M6 2h9l5 5v15H6zM14 2v6h6"/>', arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  doc: '<path d="M6 2h9l5 5v15H6zM14 2v6h6"/>',
+  list: '<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/>',
+  fb: '<path d="M14 8h3V4h-3a4 4 0 00-4 4v2H7v4h3v7h4v-7h3l1-4h-4V8z"/>',
+  yt: '<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10 9.5v5l4.5-2.5z"/>', arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
 };
 const icon = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${I[n] || I.info}</svg>`;
 
@@ -191,7 +195,87 @@ const VIEWS = [
 ];
 const SLUG_TO_VIEW = Object.fromEntries(VIEWS.map(([k, , s]) => [s, k]));
 
+// ---- Kiểu giao diện "menu ngang" (topnav): menu trên cùng có menu con + ảnh xem trước ----
+const LAYOUT = S.layout === 'rail' ? 'rail' : 'topnav';
+document.body.classList.add(`layout-${LAYOUT}`);
+
+function renderTopnav() {
+  const rail = $('#rail');
+  const overview = T.groups.filter((g) => g.kind !== 'unit' && g.scenes.length);
+  const units = T.groups.filter((g) => g.kind === 'unit' && g.scenes.length);
+  const sub = (entries) => `<div class="tn-sub"><div class="tn-sub-list">${entries.map(([slug, label]) =>
+    `<button class="tn-sub-item" data-scene="${esc(slug)}">${esc(label)}</button>`).join('')}</div>
+    <div class="tn-sub-thumb"><img alt="" src="${esc(sceneBySlug.get(entries[0][0])?.pano?.thumb || '')}"><span>${esc(entries[0][1])}</span></div></div>`;
+  let html = overview.map((g) => `<div class="tn-item" data-group="${g.id}">
+      <button class="tn-link"><span>${esc(tr(g.name))}</span>${icon('city')}</button>
+      ${sub(g.scenes.map((s) => [s, tr(sceneBySlug.get(s).title)]))}</div>`).join('');
+  if (units.length) {
+    html += `<div class="tn-item" data-units="${units.map((g) => g.id).join(',')}">
+      <button class="tn-link"><span>${u('units')}</span>${icon('home')}</button>
+      ${sub(units.map((g) => [g.scenes[0], tr(g.name)]))}</div>`;
+  }
+  html += VIEWS.filter(([, , , ok]) => ok()).map(([k, ic]) => `<div class="tn-item"><button class="tn-link" data-view="${k}"><span>${u(k)}</span>${icon(ic)}</button></div>`).join('');
+  rail.innerHTML = html;
+
+  $$('.tn-item', rail).forEach((item) => {
+    const link = $('.tn-link', item);
+    if (link.dataset.view) return link.addEventListener('click', () => { closeMobileMenu(); openView(link.dataset.view); });
+    // Desktop: mở khi rê chuột (CSS); cảm ứng / mobile: bấm để mở-đóng
+    link.addEventListener('click', () => {
+      const open = !item.classList.contains('open');
+      $$('.tn-item.open', rail).forEach((x) => x.classList.remove('open'));
+      item.classList.toggle('open', open);
+    });
+    const img = $('.tn-sub-thumb img', item), cap = $('.tn-sub-thumb span', item);
+    $$('.tn-sub-item', item).forEach((b) => {
+      b.addEventListener('mouseenter', () => { img.src = sceneBySlug.get(b.dataset.scene)?.pano?.thumb || ''; cap.textContent = b.textContent; });
+      b.addEventListener('click', () => { item.classList.remove('open'); closeMobileMenu(); goScene(b.dataset.scene); });
+    });
+  });
+  const brand = $('.brand-mark');
+  brand.innerHTML = S.logo_url ? `<img src="${esc(S.logo_url)}" alt="${esc(tr(T.name))}">` : `<span>${esc(S.logo_text || tr(T.name))}</span>`;
+  brand.onclick = (e) => { e.preventDefault(); closeMobileMenu(); goScene(T.startScene); };
+  renderSocial();
+  markActive();
+}
+document.addEventListener('click', (e) => { if (!e.target.closest('.tn-item')) $$('.tn-item.open').forEach((x) => x.classList.remove('open')); });
+
+function renderSocial() {
+  const links = [['website', S.website, 'globe'], ['facebook', S.facebook, 'fb'], ['youtube', S.youtube, 'yt']].filter(([, url]) => url && /^https?:\/\//.test(url));
+  $('#social').innerHTML = links.map(([k, url, ic]) => `<a class="soc" href="${esc(url)}" target="_blank" rel="noopener" title="${k}" data-t="${k}">${icon(ic)}</a>`).join('');
+  $$('#social a').forEach((a) => a.addEventListener('click', () => track('cta', a.dataset.t)));
+}
+
+// Nút riêng cho nhóm căn hộ: mặt bằng căn + danh sách phòng
+function renderUnitBar() {
+  const bar = $('#unitBar'), g = groupById.get(current?.group);
+  if (LAYOUT !== 'topnav' || !g || g.kind !== 'unit') { bar.hidden = true; return; }
+  bar.hidden = false;
+  bar.innerHTML = `${g.floorplan && F.floorplan ? `<button class="ub-btn" data-ub="plan" title="${u('floorplan')}">${icon('plan')}</button>` : ''}
+    <div class="ub-menu"><button class="ub-btn" data-ub="list" title="${esc(tr(g.name))}">${icon('list')}</button>
+      <div class="ub-pop"><div class="ub-head">${esc(tr(g.name))}</div>${g.scenes.map((slug) => `<button class="ub-room ${slug === current.slug ? 'on' : ''}" data-scene="${esc(slug)}">${esc(tr(sceneBySlug.get(slug).title))}</button>`).join('')}
+      <div class="ub-thumb"><img alt="" src="${esc(current.pano?.thumb || '')}"><span>${esc(tr(current.title))}</span></div></div></div>`;
+  const pop = $('.ub-pop', bar);
+  // Mỗi lúc chỉ mở một bảng: mặt bằng căn HOẶC danh sách phòng
+  $('[data-ub="plan"]', bar)?.addEventListener('click', (e) => { e.stopPropagation(); pop.classList.remove('open'); $('#minimap').classList.toggle('show'); });
+  $('[data-ub="list"]', bar).addEventListener('click', (e) => { e.stopPropagation(); $('#minimap').classList.remove('show'); pop.classList.toggle('open'); });
+  $$('.ub-room', bar).forEach((b) => {
+    b.addEventListener('mouseenter', () => { $('.ub-thumb img', bar).src = sceneBySlug.get(b.dataset.scene)?.pano?.thumb || ''; $('.ub-thumb span', bar).textContent = b.textContent; });
+    b.addEventListener('click', () => goScene(b.dataset.scene));
+  });
+}
+document.addEventListener('click', (e) => { if (!e.target.closest('.ub-menu')) $('.ub-pop.open')?.classList.remove('open'); });
+
+// Mobile: nút hamburger mở menu toàn màn hình
+const burger = $('#burger');
+function closeMobileMenu() { document.body.classList.remove('menu-open'); burger?.setAttribute('aria-expanded', 'false'); }
+burger?.addEventListener('click', () => {
+  const open = !document.body.classList.contains('menu-open');
+  document.body.classList.toggle('menu-open', open); burger.setAttribute('aria-expanded', String(open));
+});
+
 function renderRail() {
+  if (LAYOUT === 'topnav') return renderTopnav();
   const rail = $('#rail');
   rail.innerHTML = T.groups.filter((g) => g.scenes.length).map((g) => `
     <button class="rail-item" data-group="${g.id}">${icon(g.icon === 'home' ? 'home' : 'city')}<span>${esc(tr(g.name))}</span></button>`).join('')
@@ -227,6 +311,17 @@ function markActive() {
     b.classList.toggle('expanded', Number(b.dataset.group) === drawerGroup);
   });
   $$('#drawer .thumb').forEach((t) => t.classList.toggle('active', t.dataset.scene === current?.slug));
+  // topnav
+  $$('.tn-item').forEach((it) => {
+    const inGroup = it.dataset.group && Number(it.dataset.group) === current?.group;
+    const inUnits = it.dataset.units && it.dataset.units.split(',').map(Number).includes(current?.group);
+    const view = $('.tn-link', it)?.dataset.view;
+    it.classList.toggle('active', openViewKey ? view === openViewKey : !!(inGroup || inUnits));
+  });
+  $$('.tn-sub-item').forEach((b) => {
+    const sc = sceneBySlug.get(b.dataset.scene);
+    b.classList.toggle('on', b.closest('[data-units]') ? sc?.group === current?.group : b.dataset.scene === current?.slug);
+  });
 }
 
 // ---------------- Scene UI ----------------
@@ -240,6 +335,7 @@ function renderSceneUI() {
   dn.hidden = !(F.daynight && sc.pair);
   if (sc.pair) { dn.classList.toggle('night', sc.pair.role === 'night'); dn.setAttribute('aria-label', sc.pair.role === 'night' ? 'Đêm' : 'Ngày'); }
   renderMinimap();
+  renderUnitBar();
   markActive();
 }
 $('#dayNight').addEventListener('click', () => { if (current?.pair) { track('cta', 'daynight'); goScene(current.pair.slug, { keepView: true }); } });
