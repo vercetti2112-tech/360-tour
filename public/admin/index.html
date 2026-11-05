@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Quản trị Tour 360</title>
+<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/vendor/psv/core/index.css">
+<link rel="stylesheet" href="/vendor/psv/markers-plugin/index.css">
+<link rel="stylesheet" href="/admin-assets/admin.css">
+<script type="importmap">
+{ "imports": {
+  "three": "/vendor/three/three.module.min.js",
+  "@photo-sphere-viewer/core": "/vendor/psv/core/index.module.js",
+  "@photo-sphere-viewer/markers-plugin": "/vendor/psv/markers-plugin/index.module.js",
+  "@photo-sphere-viewer/equirectangular-tiles-adapter": "/vendor/psv/equirectangular-tiles-adapter/index.module.js"
+} }
+</script>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="toast" class="toast" hidden></div>
+  <script type="module" src="/admin-assets/admin.js"></script>
+</body>
+</html>

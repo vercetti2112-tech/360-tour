@@ -1,0 +1,15 @@
+services:
+  tour:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: doi-mat-khau-nay   # đổi trước khi chạy thật
+      SEED_DEMO: "1"                      # "0" để bắt đầu với DB trống
+      # PUBLIC_URL: https://tour.example.com   # tên miền thật (canonical, OG, sitemap)
+    volumes:
+      - tour-data:/data                   # DB + ảnh tải lên, giữ nguyên khi cập nhật
+    restart: unless-stopped
+volumes:
+  tour-data:
