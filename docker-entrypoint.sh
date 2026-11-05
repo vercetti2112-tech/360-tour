@@ -4,7 +4,7 @@ set -e
 if [ "${SEED_DEMO:-1}" = "1" ]; then
   EMPTY=$(node --no-warnings -e "import('./server/db.js').then(({get})=>console.log(get('SELECT COUNT(*) n FROM projects').n===0?1:0))")
   if [ "$EMPTY" = "1" ]; then
-    echo "[entrypoint] DB trống -> tạo dữ liệu demo..."
+    echo "[entrypoint] DB trống -> tạo dữ liệu demo (mất khoảng 30-60 giây, web chưa mở trong lúc này)..."
     node --no-warnings server/seed.js
   fi
 fi

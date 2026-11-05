@@ -1,0 +1,3 @@
+# Script shell luôn dùng LF (tránh lỗi trên Windows khi git tự đổi sang CRLF)
+*.sh text eol=lf
+Dockerfile text eol=lf

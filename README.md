@@ -45,3 +45,17 @@ public/
 
 ## Webhook CRM
 Khi có lead mới, server gửi `POST` JSON `{event:"lead.created", project, lead}` tới URL webhook (https) cấu hình trong *Cài đặt dự án*. Kết quả gửi lưu ở cột "CRM" của trang Lead.
+
+## Docker
+
+```bash
+docker compose up -d --build
+docker compose logs -f        # theo dõi; chờ dòng "VR Tour CMS chạy tại ..."
+```
+Lần chạy đầu container tạo dữ liệu demo (30–60 giây) — trong lúc đó trình duyệt báo "từ chối kết nối" là bình thường.
+
+### Xử lý sự cố
+- `docker compose ps` không thấy container `Up` → xem `docker compose logs`.
+- Báo `exec ./docker-entrypoint.sh: no such file or directory` (Windows, file bị đổi CRLF) → `git pull` bản mới rồi `docker compose up -d --build`.
+- Cổng 3000 đã bị chiếm → sửa `"3000:3000"` thành `"8080:3000"` và mở http://localhost:8080.
+- `ADMIN_PASSWORD` chỉ có tác dụng khi DB được tạo lần đầu. Muốn tạo lại từ đầu: `docker compose down -v` (xoá cả dữ liệu!) rồi chạy lại.
