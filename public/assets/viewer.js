@@ -65,6 +65,7 @@ const I = {
   image: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M21 16l-5-5-8 8"/>',
   doc: '<path d="M6 2h9l5 5v15H6zM14 2v6h6"/>',
   list: '<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',
+  menu: '<path d="M4 7h16M4 12h16M4 17h16"/>', close: '<path d="M6 6l12 12M18 6L6 18"/>',
   globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/>',
   fb: '<path d="M14 8h3V4h-3a4 4 0 00-4 4v2H7v4h3v7h4v-7h3l1-4h-4V8z"/>',
   yt: '<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10 9.5v5l4.5-2.5z"/>', arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
@@ -196,8 +197,15 @@ const VIEWS = [
 const SLUG_TO_VIEW = Object.fromEntries(VIEWS.map(([k, , s]) => [s, k]));
 
 // ---- Kiểu giao diện "menu ngang" (topnav): menu trên cùng có menu con + ảnh xem trước ----
-const LAYOUT = S.layout === 'rail' ? 'rail' : 'topnav';
+// dock (mặc định): menu nổi ở đáy; topnav: menu ngang trên cùng; rail: thanh dọc trái
+const LAYOUT = ['rail', 'topnav'].includes(S.layout) ? S.layout : 'dock';
+const MENU_TOP = LAYOUT === 'topnav' || LAYOUT === 'dock'; // hai kiểu dùng chung markup menu
 document.body.classList.add(`layout-${LAYOUT}`);
+if (LAYOUT === 'dock') {
+  // Thanh công cụ dọc bên phải: mạng xã hội + liên hệ + điều khiển
+  const tb = $('#toolbar'); tb.hidden = false;
+  tb.append($('#social'), $('#quick'), $('#controls'));
+}
 
 function renderTopnav() {
   const rail = $('#rail');
@@ -215,7 +223,12 @@ function renderTopnav() {
       ${sub(units.map((g) => [g.scenes[0], tr(g.name)]))}</div>`;
   }
   html += VIEWS.filter(([, , , ok]) => ok()).map(([k, ic]) => `<div class="tn-item"><button class="tn-link" data-view="${k}"><span>${u(k)}</span>${icon(ic)}</button></div>`).join('');
+  if (LAYOUT === 'dock') {
+    const brandHtml = S.logo_url ? `<img src="${esc(S.logo_url)}" alt="${esc(tr(T.name))}">` : `<span>${esc(S.logo_text || tr(T.name))}</span>`;
+    html = `<a class="dock-brand" href="/${esc(T.slug)}" data-home>${brandHtml}</a>` + html;
+  }
   rail.innerHTML = html;
+  $('.dock-brand', rail)?.addEventListener('click', (e) => { e.preventDefault(); closeMobileMenu(); goScene(T.startScene); });
 
   $$('.tn-item', rail).forEach((item) => {
     const link = $('.tn-link', item);
@@ -249,7 +262,7 @@ function renderSocial() {
 // Nút riêng cho nhóm căn hộ: mặt bằng căn + danh sách phòng
 function renderUnitBar() {
   const bar = $('#unitBar'), g = groupById.get(current?.group);
-  if (LAYOUT !== 'topnav' || !g || g.kind !== 'unit') { bar.hidden = true; return; }
+  if (!MENU_TOP || !g || g.kind !== 'unit') { bar.hidden = true; return; }
   bar.hidden = false;
   bar.innerHTML = `${g.floorplan && F.floorplan ? `<button class="ub-btn" data-ub="plan" title="${u('floorplan')}">${icon('plan')}</button>` : ''}
     <div class="ub-menu"><button class="ub-btn" data-ub="list" title="${esc(tr(g.name))}">${icon('list')}</button>
@@ -275,7 +288,7 @@ burger?.addEventListener('click', () => {
 });
 
 function renderRail() {
-  if (LAYOUT === 'topnav') return renderTopnav();
+  if (MENU_TOP) return renderTopnav();
   const rail = $('#rail');
   rail.innerHTML = T.groups.filter((g) => g.scenes.length).map((g) => `
     <button class="rail-item" data-group="${g.id}">${icon(g.icon === 'home' ? 'home' : 'city')}<span>${esc(tr(g.name))}</span></button>`).join('')
@@ -356,15 +369,43 @@ $('.mm-close').addEventListener('click', () => $('#minimap').classList.toggle('c
 function updateCompass(yawRad) {
   if (!current) return;
   const d = (yawRad * 180) / Math.PI + (current.north || 0);
-  if (F.compass) { $('#compass').hidden = false; $('.compass-dial').style.transform = `rotate(${-d}deg)`; }
+  if (F.compass && LAYOUT === 'dock') updateTape(d);
+  else if (F.compass) { $('#compass').hidden = false; $('.compass-dial').style.transform = `rotate(${-d}deg)`; }
   const active = $('.mm-dot.active i'); if (active) active.style.transform = `rotate(${d}deg)`;
 }
 
 // ---------------- Controls ----------------
 let autotourTimer = null;
+// La bàn dạng thước ngang (kiểu dock): vạch mỗi 15°, nhãn mỗi 45°, trượt theo hướng nhìn
+const PX_PER_DEG = 2.4;
+function buildTape() {
+  const tape = $('#tapeInner'); if (!tape) return;
+  const names = lang === 'en' ? ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] : ['B', 'ĐB', 'Đ', 'ĐN', 'N', 'TN', 'T', 'TB'];
+  let html = '';
+  for (let a = -360; a <= 720; a += 15) {
+    const n = ((a % 360) + 360) % 360;
+    const major = n % 90 === 0, mid = n % 45 === 0;
+    html += `<i class="tk ${major ? 'major' : mid ? 'mid' : ''}" style="left:${(a + 360) * PX_PER_DEG}px">${mid ? `<b>${names[n / 45]}</b>` : ''}</i>`;
+  }
+  tape.innerHTML = html;
+}
+function updateTape(d) {
+  const tape = $('#tapeInner'); if (!tape) return;
+  $('#compassTape').hidden = false;
+  const n = ((d % 360) + 360) % 360;
+  tape.style.transform = `translateX(${-(n + 360) * PX_PER_DEG}px)`;
+}
+
+// Ẩn/hiện toàn bộ giao diện để ngắm ảnh trọn vẹn
+$('#uiToggle')?.addEventListener('click', () => {
+  const hidden = document.body.classList.toggle('ui-hidden');
+  $('#uiToggle').innerHTML = icon(hidden ? 'menu' : 'close');
+  $('#uiToggle').setAttribute('aria-label', hidden ? 'Hiện giao diện' : 'Ẩn giao diện');
+});
+
 function renderControls() {
   const items = [
-    ['zoomOut', 'minus', () => viewer.zoomOut(10)], ['zoomIn', 'plus', () => viewer.zoomIn(10)],
+    LAYOUT !== 'dock' && ['zoomOut', 'minus', () => viewer.zoomOut(10)], LAYOUT !== 'dock' && ['zoomIn', 'plus', () => viewer.zoomIn(10)],
     F.autorotate && ['autorotate', 'rotate', () => { autorotate.toggle(); syncControls(); }],
     ['autotour', 'play', toggleAutotour],
     F.sound && S.bg_sound && ['sound', 'sound', toggleSound],
@@ -658,6 +699,7 @@ addEventListener('popstate', () => {
 // ---------------- Khởi động ----------------
 function renderAll() {
   renderI18n(); renderRail(); renderControls(); renderQuick(); renderLang();
+  if (LAYOUT === 'dock') { buildTape(); $('#uiToggle').hidden = false; $('#uiToggle').innerHTML = icon('close'); }
   const disc = $('#disclaimer'); disc.hidden = !(F.disclaimer && tr(S.disclaimer)); disc.textContent = tr(S.disclaimer);
   $('.loader-name').textContent = tr(T.name);
   if (current) renderSceneUI();

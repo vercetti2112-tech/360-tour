@@ -225,6 +225,130 @@ body.has-view .scene-title { display: none; }
   .area-list { max-height: none; }
   .disclaimer { display: none; }
 }
+/* ================= Kiểu giao diện "dock" (mặc định): menu nổi ở đáy ================= */
+.compass-tape, .toolbar, .ui-toggle { display: none; }
+body.layout-dock { --dock-h: 56px; }
+.layout-dock .brand, .layout-dock .drawer, .layout-dock .compass, .layout-dock .topbar .lang { display: none; }
+.layout-dock .disclaimer { bottom: 2px; }
+
+/* Tên cảnh: góc trên trái, chữ in hoa */
+.layout-dock .scene-title { top: 16px; left: 18px; background: none; backdrop-filter: none; padding: 0; font-size: 19px; letter-spacing: .02em;
+  text-transform: uppercase; text-shadow: 0 1px 8px rgba(0,0,0,.6); max-width: 40vw; }
+.layout-dock .scene-title .st-group, .layout-dock .scene-title .st-sep { display: none; }
+.layout-dock .scene-title .st-name { font-weight: 500; }
+
+/* La bàn dạng thước ở giữa phía trên */
+.layout-dock .compass-tape { display: block; position: fixed; top: 0; left: 50%; width: 260px; height: 46px; transform: translateX(-50%); z-index: 9; overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent); mask-image: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent); pointer-events: none; }
+.layout-dock .compass-tape[hidden] { display: none; }
+.tape-inner { position: absolute; left: 50%; top: 0; height: 100%; }
+.tk { position: absolute; top: 0; width: 1px; height: 9px; background: rgba(255,255,255,.75); }
+.tk.mid { height: 13px; } .tk.major { height: 18px; width: 2px; background: #fff; }
+.tk b { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: 600; color: rgba(255,255,255,.85); text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+.tk.major b { font-size: 14px; color: #fff; top: 22px; }
+.tape-pin { position: absolute; left: 50%; top: 0; transform: translateX(-50%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 9px solid var(--accent); }
+
+/* Menu nổi hình viên thuốc ở giữa phía dưới */
+.layout-dock .rail { top: auto; bottom: calc(14px + var(--safe-b)); left: 50%; transform: translateX(-50%); width: auto; max-width: calc(100vw - 140px); height: var(--dock-h);
+  flex-direction: row; align-items: center; gap: 0; padding: 6px 10px; border-radius: 999px; overflow: visible; z-index: 14;
+  background: rgba(12, 28, 42, .42); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,.28); box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+.dock-brand { display: flex; align-items: center; padding: 0 16px 0 8px; margin-right: 6px; height: 34px; border-right: 1px solid rgba(255,255,255,.35); color: #fff; text-decoration: none;
+  font-weight: 800; font-size: 13px; letter-spacing: .1em; white-space: nowrap; }
+.dock-brand img { max-height: 34px; max-width: 140px; display: block; }
+.layout-dock .tn-item + .tn-item::before { top: 12px; bottom: 12px; background: rgba(255,255,255,.35); }
+.layout-dock .tn-item .tn-link { height: 40px; padding: 0 22px; margin: 0 4px; border-radius: 999px; font-size: 15px; font-weight: 500; letter-spacing: 0; text-transform: none; color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,.35); transition: background .2s; }
+.layout-dock .tn-link .ic { display: none; }
+.layout-dock .tn-link::after { display: none; }
+.layout-dock .tn-item:hover .tn-link { background: rgba(255,255,255,.15); }
+.layout-dock .tn-item.active .tn-link { background: var(--accent); color: #fff; text-shadow: none; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
+.layout-dock .tn-item.active + .tn-item::before, .layout-dock .tn-item:has(+ .tn-item.active)::before { opacity: 0; }
+/* Menu con mở lên trên */
+.layout-dock .tn-sub { top: auto; bottom: calc(100% + 14px); transform: translate(-50%, -8px); }
+@media (hover: hover) { .layout-dock .tn-item:hover .tn-sub { transform: translate(-50%, 0); } }
+.layout-dock .tn-item.open .tn-sub { transform: translate(-50%, 0); }
+.layout-dock .tn-sub::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 16px; } /* cầu nối để rê chuột không bị mất menu */
+
+/* Thanh công cụ dọc bên phải */
+.layout-dock .toolbar { display: flex; position: fixed; right: 12px; top: 50%; transform: translateY(-40%); z-index: 10; flex-direction: column; gap: 10px; }
+.layout-dock .toolbar[hidden] { display: none; }
+.layout-dock .toolbar .social, .layout-dock .toolbar .controls, .layout-dock .toolbar .quick {
+  position: static; transform: none; display: flex; flex-direction: column; gap: 2px; padding: 6px 4px; border-radius: 999px;
+  background: rgba(12, 28, 42, .42); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.25); }
+.layout-dock .toolbar .quick:empty, .layout-dock .toolbar .social:empty { display: none; }
+.layout-dock .toolbar .soc, .layout-dock .toolbar .ctl { width: 38px; height: 38px; border: 0; border-radius: 50%; background: none; color: #fff; }
+.layout-dock .toolbar .soc .ic, .layout-dock .toolbar .ctl .ic { width: 19px; height: 19px; }
+.layout-dock .toolbar .soc:hover, .layout-dock .toolbar .ctl:hover { background: rgba(255,255,255,.18); color: #fff; }
+.layout-dock .toolbar .ctl.on { color: var(--accent); }
+.layout-dock .toolbar .q { width: 38px; height: 38px; min-width: 0; padding: 0; justify-content: center; box-shadow: none; font-size: 11px; }
+.layout-dock .toolbar .q span { display: none; }
+
+/* Ngày/đêm dọc ở góc dưới trái */
+.layout-dock .daynight { top: auto; right: auto; left: 16px; bottom: calc(16px + var(--safe-b)); flex-direction: column; gap: 6px; padding: 8px 6px; border-radius: 999px;
+  background: var(--accent); color: #fff; }
+.layout-dock .daynight .dn-knob { width: 22px; height: 40px; background: rgba(255,255,255,.35); }
+.layout-dock .daynight .dn-knob::after { left: 2px; width: 18px; height: 18px; background: #fff; }
+.layout-dock .daynight.night .dn-knob::after { transform: translateY(18px); background: #fff; }
+.layout-dock .daynight .dn-sun, .layout-dock .daynight.night .dn-moon { color: #fff; }
+.layout-dock .daynight .dn-moon, .layout-dock .daynight.night .dn-sun { color: rgba(255,255,255,.55); }
+
+/* Nút tròn góc dưới phải: ẩn / hiện giao diện */
+.layout-dock .ui-toggle { display: grid; place-items: center; position: fixed; right: 14px; bottom: calc(16px + var(--safe-b)); z-index: 15; width: 46px; height: 46px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.85); background: var(--accent); color: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.3); }
+.layout-dock .ui-toggle[hidden] { display: none; }
+.layout-dock .ui-toggle .ic { width: 22px; height: 22px; }
+body.ui-hidden .rail, body.ui-hidden .toolbar, body.ui-hidden .daynight, body.ui-hidden .unit-bar, body.ui-hidden .minimap,
+body.ui-hidden .topbar, body.ui-hidden .scene-title, body.ui-hidden .disclaimer, body.ui-hidden .compass-tape, body.ui-hidden .psv-marker { opacity: 0 !important; pointer-events: none !important; }
+.layout-dock .rail, .layout-dock .toolbar, .layout-dock .daynight, .layout-dock .scene-title, .layout-dock .topbar { transition: opacity .3s; }
+
+/* CTA + nút căn hộ */
+.layout-dock .topbar { top: 14px; right: 14px; }
+.layout-dock .unit-bar { display: flex; position: fixed; left: 16px; top: 64px; z-index: 10; flex-direction: column; gap: 8px; }
+.layout-dock .unit-bar[hidden] { display: none; }
+.layout-dock .minimap { display: none; right: auto; left: 76px; top: 64px; bottom: auto; width: 340px; }
+.layout-dock .minimap.show { display: block; }
+.layout-dock .view { inset: 0 0 calc(var(--dock-h) + 24px + var(--safe-b)) 0; }
+.layout-dock.has-view .toolbar, .layout-dock.has-view .daynight, .layout-dock.has-view .unit-bar, .layout-dock.has-view .compass-tape, .layout-dock.has-view .ui-toggle { display: none; }
+.layout-dock .view-head { padding-right: 160px; }
+
+/* Nhãn POI dạng viên thuốc có đường dẫn + vòng tròn */
+.layout-dock .poi-card { padding: 7px 16px; border-radius: 999px; border: 0; background: linear-gradient(90deg, var(--accent), var(--brand)); box-shadow: 0 4px 14px rgba(0,0,0,.25);
+  display: flex; gap: 6px; align-items: baseline; font-size: 12.5px; }
+.layout-dock .poi-card b { display: inline; font-weight: 600; }
+.layout-dock .poi-card small { color: #fff; font-weight: 600; }
+.layout-dock .poi-card small::before { content: "- "; }
+.layout-dock .poi-line { width: 1px; background: rgba(255,255,255,.85); }
+.layout-dock .poi-dot { width: 12px; height: 12px; background: rgba(255,255,255,.25); box-shadow: 0 0 0 2px #fff; }
+
+@media (max-width: 900px) {
+  body.layout-dock { --dock-h: 50px; }
+  .layout-dock .burger { display: none; }
+  /* Không dùng backdrop-filter ở đây: nó biến thanh menu thành khung chứa của phần tử fixed và cắt mất menu con */
+  .layout-dock .rail { left: 10px; right: 64px; transform: none; max-width: none; padding: 5px 6px; justify-content: flex-start; overflow-x: auto; overflow-y: visible; scrollbar-width: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(12, 28, 42, .72); }
+  .layout-dock .rail::-webkit-scrollbar { display: none; }
+  .layout-dock .tn-item { flex: none; }
+  .layout-dock .tn-item .tn-link { padding: 0 14px; font-size: 14px; height: 38px; }
+  .dock-brand { padding: 0 10px 0 6px; font-size: 11px; }
+  .dock-brand img { max-height: 28px; max-width: 90px; }
+  /* Menu con trên mobile: bảng cố định phía trên dock */
+  .layout-dock .tn-sub { position: fixed; left: 10px; right: 10px; bottom: calc(var(--dock-h) + 24px + var(--safe-b)); transform: none !important; grid-template-columns: 1fr; }
+  .layout-dock .tn-sub-thumb { display: none; }
+  .layout-dock .ui-toggle { right: 10px; bottom: calc(16px + var(--safe-b)); width: 44px; height: 44px; }
+  .layout-dock .toolbar { right: 8px; top: auto; bottom: calc(var(--dock-h) + 34px + var(--safe-b)); transform: none; }
+  .layout-dock .toolbar .soc, .layout-dock .toolbar .ctl, .layout-dock .toolbar .q { width: 34px; height: 34px; }
+  .layout-dock .toolbar .social { display: none; }
+  .layout-dock .daynight { bottom: calc(var(--dock-h) + 34px + var(--safe-b)); left: 10px; }
+  .layout-dock .scene-title { font-size: 15px; top: 14px; left: 12px; max-width: 50vw; }
+  .layout-dock .compass-tape { top: 52px; width: 200px; }
+  .layout-dock .topbar { top: 10px; right: 10px; }
+  .layout-dock .cta { padding: 8px 12px; font-size: 12px; }
+  .layout-dock .unit-bar { left: 10px; top: 100px; }
+  .layout-dock .minimap { left: 10px; right: 10px; width: auto; top: 150px; }
+  .layout-dock .view { inset: 0 0 calc(var(--dock-h) + 24px + var(--safe-b)) 0; }
+  .layout-dock .view-head { padding-right: 120px; }
+}
+
 /* ================= Kiểu giao diện "menu ngang" (layout-topnav) ================= */
 .burger, .social, .unit-bar { display: none; }
 body.layout-topnav { --bar: 64px; }
@@ -323,14 +447,14 @@ body.layout-topnav { --bar: 64px; }
   .layout-topnav .rail { position: fixed; inset: 0; transform: none; height: auto; flex-direction: column; justify-content: flex-start; padding: calc(var(--bar) + 10px) 18px 30px;
     background: rgba(6, 18, 30, .97); overflow-y: auto; opacity: 0; visibility: hidden; transition: opacity .25s, visibility .25s; z-index: 15; }
   .menu-open .rail { opacity: 1; visibility: visible; }
-  .tn-item { flex-direction: column; border-bottom: 1px solid var(--line); }
-  .tn-item + .tn-item::before { display: none; }
-  .tn-link { height: 54px; padding: 0 6px; justify-content: space-between; font-size: 14px; }
-  .tn-link::after { display: none; }
-  .tn-item.active > .tn-link { color: var(--accent); }
-  .tn-sub { position: static; transform: none; display: none; grid-template-columns: 1fr; padding: 0 0 12px; background: none; border: 0; box-shadow: none; backdrop-filter: none; opacity: 1; visibility: visible; }
-  .tn-item.open .tn-sub { display: grid; transform: none; }
-  .tn-sub-thumb { display: none; }
+  .layout-topnav .tn-item { flex-direction: column; border-bottom: 1px solid var(--line); }
+  .layout-topnav .tn-item + .tn-item::before { display: none; }
+  .layout-topnav .tn-link { height: 54px; padding: 0 6px; justify-content: space-between; font-size: 14px; }
+  .layout-topnav .tn-link::after { display: none; }
+  .layout-topnav .tn-item.active > .tn-link { color: var(--accent); }
+  .layout-topnav .tn-sub { position: static; transform: none; display: none; grid-template-columns: 1fr; padding: 0 0 12px; background: none; border: 0; box-shadow: none; backdrop-filter: none; opacity: 1; visibility: visible; }
+  .layout-topnav .tn-item.open .tn-sub { display: grid; transform: none; }
+  .layout-topnav .tn-sub-thumb { display: none; }
   .layout-topnav .topbar { right: 58px; top: 10px; }
   .layout-topnav .topbar .lang { display: none; }
   .menu-open .topbar .lang { display: flex; position: fixed; left: 18px; bottom: 30px; }
